@@ -68,32 +68,35 @@ class _CourcesState extends State<Cources> with SingleTickerProviderStateMixin {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       isLoggedIn= prefs.getBool('isLoggedIn') ?? false;
+      print("LLLLLLLLLLLLLLLLLLOOOOOOOOOOOOOOGGGG $isLoggedIn");
       show_step1=prefs.getBool("show_step1");
+
       show_step2=prefs.getBool("show_step2");
       show_step3=prefs.getBool("show_step3");
+
     });
-   if( isLoggedIn==true){
-     setState(() {
-       userId = prefs.getString('user_id');
-       dev_id=prefs.getString('dev_id');
+    if( isLoggedIn==true){
+      setState(() {
+        userId = prefs.getString('user_id');
+        dev_id=prefs.getString('dev_id');
 
-       uid=int.parse(userId);
-     });
-   }else{
-     setState(() {
-       userId = '2940';
-       dev_id= 'fb06ug-UQA6iAZi-bGJU5k:APA91bFX63kYjgpA3hvdFGUTtCP-38DTMF9M5-nyh0qvsM-nMgWerw5_YGJs63VM0fmmnZeYZD-1Mm1aZbIJnQHK5RtB74Vz4EQV4qpwRDo2YyURNX7EL21X8bhOau_U7oC5P_-yueVU';
+        uid=int.parse(userId);
+      });
+    }else{
+      setState(() {
+        userId = '2940';
+        dev_id= 'fb06ug-UQA6iAZi-bGJU5k:APA91bFX63kYjgpA3hvdFGUTtCP-38DTMF9M5-nyh0qvsM-nMgWerw5_YGJs63VM0fmmnZeYZD-1Mm1aZbIJnQHK5RtB74Vz4EQV4qpwRDo2YyURNX7EL21X8bhOau_U7oC5P_-yueVU';
 
-       uid=int.parse(userId);
-     });
-   }
+        uid=int.parse(userId);
+      });
+    }
 
     var body = {
       'user_id' : '$userId',
       'device_id' : '$dev_id'
     };
     var url =
-        '$base_url/api/httprequest/list_course';
+    Uri.parse('$base_url/api/httprequest/list_course');
     var response = await http.post(url, body: body);
 
     print('Response status: ${response.statusCode}');
@@ -126,11 +129,11 @@ class _CourcesState extends State<Cources> with SingleTickerProviderStateMixin {
         dev_id=prefs.getString('dev_id');
       });
     }else{
-     setState(() {
-       userId = '2940';
-       dev_id= 'fb06ug-UQA6iAZi-bGJU5k:APA91bFX63kYjgpA3hvdFGUTtCP-38DTMF9M5-nyh0qvsM-nMgWerw5_YGJs63VM0fmmnZeYZD-1Mm1aZbIJnQHK5RtB74Vz4EQV4qpwRDo2YyURNX7EL21X8bhOau_U7oC5P_-yueVU';
+      setState(() {
+        userId = '2940';
+        dev_id= 'fb06ug-UQA6iAZi-bGJU5k:APA91bFX63kYjgpA3hvdFGUTtCP-38DTMF9M5-nyh0qvsM-nMgWerw5_YGJs63VM0fmmnZeYZD-1Mm1aZbIJnQHK5RtB74Vz4EQV4qpwRDo2YyURNX7EL21X8bhOau_U7oC5P_-yueVU';
 
-     });
+      });
     }
 
     var body = {
@@ -139,7 +142,7 @@ class _CourcesState extends State<Cources> with SingleTickerProviderStateMixin {
       'course_id' : '$cID'
     };
     var url =
-        '$base_url/api/httprequest/video_module';
+    Uri.parse('$base_url/api/httprequest/video_module');
     var response = await http.post(url, body: body);
 
     print('Response status: ${response.statusCode}');
@@ -183,8 +186,8 @@ class _CourcesState extends State<Cources> with SingleTickerProviderStateMixin {
         debugPrint(
             '#PurchaseService.loadProductsForSale() notFoundIDs: ${response
                 .notFoundIDs}');
-      // scaffold_state.currentState.showSnackBar(SnackBar(content: Text('#PurchaseService.loadProductsForSale() notFoundIDs: ${response
-          //  .notFoundIDs}'),duration: Duration(seconds: 4),));
+        // scaffold_state.currentState.showSnackBar(SnackBar(content: Text('#PurchaseService.loadProductsForSale() notFoundIDs: ${response
+        //  .notFoundIDs}'),duration: Duration(seconds: 4),));
 
       }
       if (response.error != null) {
@@ -217,29 +220,29 @@ class _CourcesState extends State<Cources> with SingleTickerProviderStateMixin {
       return false;
     }
   }
-  
-int iap_course_id;
+
+  int iap_course_id;
   @override
   void initState() {
     cource_list();
 
     //initStoreInfo();
-    loadProductsForSale();
+    // loadProductsForSale();
     super.initState();
-Stream purchaseUpdated =
-    _iapIosPlatform.purchaseStream;
-_subscription = purchaseUpdated.listen((purchaseDetailsList) {
+    Stream purchaseUpdated =
+        _iapIosPlatform.purchaseStream;
+    _subscription = purchaseUpdated.listen((purchaseDetailsList) {
 
-  print('NEW PURCHASE');
-  _listenToPurchaseUpdated(purchaseDetailsList);
+      print('NEW PURCHASE');
+      _listenToPurchaseUpdated(purchaseDetailsList);
 
-}, onDone: () {
-  print('CANCELLED');
-  _subscription.cancel();
-}, onError: (error) {
-  print(error);
-});
-initStoreInfo();
+    }, onDone: () {
+      print('CANCELLED');
+      _subscription.cancel();
+    }, onError: (error) {
+      print(error);
+    });
+    initStoreInfo();
 
 
   }
@@ -247,7 +250,7 @@ initStoreInfo();
   bool show_step2=false;
   bool show_step3=false;
 
- /* Restore_Purchases()async{
+  /* Restore_Purchases()async{
 
      print('yyyyyy');
     final QueryPurchaseDetailsResponse purchaseResponse =
@@ -356,20 +359,21 @@ initStoreInfo();
         _notFoundIds = productDetailResponse.notFoundIDs;
         _consumables = [];
         _purchasePending = false;
+
         _loading = false;
       });
       return;
     }
-  /*  await _iapIosPlatform.restorePurchases().then((QueryPurchaseDetailsResponse purchaseResponse) {
+    /*  await _iapIosPlatform.restorePurchases().then((QueryPurchaseDetailsResponse purchaseResponse) {
 
     });*/
     //final QueryPurchaseDetailsResponse purchaseResponse =
     await _iapIosPlatform.restorePurchases();
-   /* purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
+    /* purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
       //print("fffffffffffffffffffffffffffffffffffffffff"+purchaseDetails.verificationData.localVerificationData+"gggggggg"+purchaseDetails.verificationData.serverVerificationData);
       await _iapIosPlatform.completePurchase(purchaseDetails);}*/
 
-  /*  if (purchaseResponse.error != null) {
+    /*  if (purchaseResponse.error != null) {
       _pastpurchases=purchaseResponse.pastPurchases;
 
       for(var i=0;i<=_pastpurchases.length;i++){
@@ -399,7 +403,7 @@ initStoreInfo();
     setState(() {
       _isAvailable = isAvailable;
       _products = productDetailResponse.productDetails;
-     // _purchases = verifiedPurchases;
+      // _purchases = verifiedPurchases;
       _notFoundIds = productDetailResponse.notFoundIDs;
       _consumables = consumables;
       _purchasePending = false;
@@ -459,13 +463,13 @@ initStoreInfo();
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    //Image.asset('assets/images/Asset 34@4x.png',height: 20,),
+                    //Image.asset('assets/images/Asset 34@4x.png',height: 20,),ok bro u can take build
                     InkWell(
                         onTap: (){
-                          scaffold_state.currentState.showSnackBar(new SnackBar(duration: Duration(seconds: 3),backgroundColor: accent,
-                              content: new Text('products length(test2) : ${_products.length.toString()}',style: TextStyle(
-                                  color: Colors.black,fontWeight: FontWeight.bold
-                              ),)));
+                          //scaffold_state.currentState.showSnackBar(new SnackBar(duration: Duration(seconds: 3),backgroundColor: accent,
+                          //content: new Text('products length(test2) : ${_products.length.toString()}',style: TextStyle(
+                          //color: Colors.black,fontWeight: FontWeight.bold
+                          //),)));
                         },
                         child: Image.asset('assets/images/Exttended Logomark.png',height: 70,)),
                     //Image.asset('assets/images/Asset 33@4x.png',height: 20,),
@@ -496,10 +500,16 @@ initStoreInfo();
 
               courcelist_length != 0?
               Expanded(
-                child: ListView.builder(itemCount:courseListModel.courses.length,itemBuilder: (context, index){
-                  return InkWell(
+                child:
+                isLoggedIn==true?
+                ListView.builder(itemCount:courseListModel.courses.length,itemBuilder: (context, index){
+                  return
+                    index >= 2 && courseListModel.courses[index].payment == 'not paid'?
+                        Container():
+                    InkWell(
                     onTap: (){
-                     /* if(courseListModel.courses[index].amount == '0.00' ||courseListModel.courses[index].payment == 'paid' ){
+
+                      /* if(courseListModel.courses[index].amount == '0.00' ||courseListModel.courses[index].payment == 'paid' ){
                         setState(() {
                           IsPaid=true;
                         });
@@ -600,17 +610,150 @@ initStoreInfo();
 
                         });
                       }else{
-                       setState(() {
+                        setState(() {
                           IsPaid=false;
                           cid=int.parse('${courseListModel.courses[index].id}');
-                          });
+                        });
                         setState(() {
-                        iap_course_id=index-1;
-                        print(iap_course_id.toString());
-                          });
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
                         //isLoggedIn==true?
                         showpayDialog(context);
-                         //showLoginDialog(context);
+                        //showLoginDialog(context);
+
+                      }
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top:18.0,left: 28,right: 28, bottom: 5),
+                      child: Container(height: 60,decoration: BoxDecoration(borderRadius: BorderRadius.circular(12),color:selectiontabbg ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(left:18.0),
+                          child: Row(
+                            children: [
+                              Center(child: Text(courseListModel.courses[index].name,style: TextStyle(fontSize: 16,fontFamily:'Poppins-SemiBold', color: activebody ),)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }, scrollDirection: Axis.vertical,):ListView.builder(itemCount:courseListModel.courses.length-2,itemBuilder: (context, index){
+                  return InkWell(
+                    onTap: (){
+
+                      /* if(courseListModel.courses[index].amount == '0.00' ||courseListModel.courses[index].payment == 'paid' ){
+                        setState(() {
+                          IsPaid=true;
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        video_list('${courseListModel.courses[index].id}');
+                        setState(() {
+                          cid=int.parse('${courseListModel.courses[index].id}');
+
+                          video_title=courseListModel.courses[index].name;
+                          showvideo_list = true;
+
+                        });
+                      }else{
+                        *//*for(var i=0;i<=_pastpurchases.length;i++){
+                          if(_pastpurchases[i].productID=="Step1"){
+
+                          }
+                        }*//*
+                        setState(() {
+                          IsPaid=false;
+                           cid=int.parse('${courseListModel.courses[index].id}');
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        //isLoggedIn==true?
+                        showpayDialog(context);
+                        //showLoginDialog(context);
+                      }
+*/
+
+                      if(courseListModel.courses[index].amount == '0.00' ||courseListModel.courses[index].payment == 'paid' ){
+                        setState(() {
+                          IsPaid=true;
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        video_list('${courseListModel.courses[index].id}');
+                        setState(() {
+                          cid=int.parse('${courseListModel.courses[index].id}');
+
+                          video_title=courseListModel.courses[index].name;
+                          showvideo_list = true;
+
+                        });
+                      }else if(index==1 && show_step1==true){
+                        setState(() {
+                          IsPaid=true;
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        video_list('${courseListModel.courses[index].id}');
+                        setState(() {
+                          cid=int.parse('${courseListModel.courses[index].id}');
+
+                          video_title=courseListModel.courses[index].name;
+                          showvideo_list = true;
+
+                        });
+                      }else  if(index==2 && show_step2==true){
+                        setState(() {
+                          IsPaid=true;
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        video_list('${courseListModel.courses[index].id}');
+                        setState(() {
+                          cid=int.parse('${courseListModel.courses[index].id}');
+
+                          video_title=courseListModel.courses[index].name;
+                          showvideo_list = true;
+
+                        });
+                      }else  if(index==3 && show_step3==true){
+                        setState(() {
+                          IsPaid=true;
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        video_list('${courseListModel.courses[index].id}');
+                        setState(() {
+                          cid=int.parse('${courseListModel.courses[index].id}');
+
+                          video_title=courseListModel.courses[index].name;
+                          showvideo_list = true;
+
+                        });
+                      }else{
+                        setState(() {
+                          IsPaid=false;
+                          cid=int.parse('${courseListModel.courses[index].id}');
+                        });
+                        setState(() {
+                          iap_course_id=index-1;
+                          print(iap_course_id.toString());
+                        });
+                        //isLoggedIn==true?
+                        showpayDialog(context);
+                        //showLoginDialog(context);
 
                       }
                     },
@@ -631,33 +774,33 @@ initStoreInfo();
                 }, scrollDirection: Axis.vertical,),
               ):CircularProgressIndicator(),
 
-               Padding(
-                 padding: const EdgeInsets.only(left: 28,bottom: 10),
-                 child: Row(
-                   children: [
-                     InkWell(
-                       onTap: (){
-                         initStoreInfo();
-                       },
-                       child: Container(
+              Padding(
+                padding: const EdgeInsets.only(left: 28,bottom: 10),
+                child: Row(
+                  children: [
+                    InkWell(
+                      onTap: (){
+                        _iapIosPlatform.restorePurchases();
+                      },
+                      child: Container(
 
-                         decoration: BoxDecoration(
-                           color: accent,
-                           borderRadius: BorderRadius.all(Radius.circular(10))
-                         ),
-                         child: Padding(
-                           padding: const EdgeInsets.all(8.0),
-                           child: Text(
-                             'Restore Purchases',style:TextStyle(
-                             color: Colors.black,fontWeight: FontWeight.bold,fontSize: 14
-                           ) ,
-                           ),
-                         ),
-                       ),
-                     ),
-                   ],
-                 ),
-               ),
+                        decoration: BoxDecoration(
+                            color: accent,
+                            borderRadius: BorderRadius.all(Radius.circular(10))
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Text(
+                            'Restore Purchases',style:TextStyle(
+                              color: Colors.black,fontWeight: FontWeight.bold,fontSize: 14
+                          ) ,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
 
             ],
           ),
@@ -812,7 +955,7 @@ initStoreInfo();
 
     };
     var url =
-        '$base_url/api/httprequest/verifyotp';
+    Uri.parse('$base_url/api/httprequest/verifyotp');
     var response = await http.post(url, body: body);
 
     print('Response status: ${response.statusCode}');
@@ -833,18 +976,35 @@ initStoreInfo();
     Widget launchButton = FlatButton(
       child: Text("Purchase Now",style: TextStyle(color: accent,fontSize:18),),
       onPressed:  () {
-        print('PPPPRPRPRPPPRPRPRP ${products.length}');
-        var baseurl=APIS.base_url;
-        Navigator.of(context, rootNavigator: true).pop();
-        print(products[iap_course_id].id);
+if(_products.length==0||_products.length==null){
+  Navigator.of(context, rootNavigator: true).pop();
+  scaffold_state.currentState.showSnackBar(new SnackBar(duration: Duration(seconds: 3),backgroundColor: accent,
+      content: new Text('Product Not Available',style: TextStyle(
+          color: Colors.black,fontWeight: FontWeight.bold
+      ),)));
+}else{
+  print('PPPPRPRPRPPPRPRPRP ${_products.length}');
+  var baseurl=APIS.base_url;
+  Navigator.of(context, rootNavigator: true).pop();
+  print(_products[iap_course_id].id);
 
-        PurchaseParam purchaseParam = PurchaseParam(
-            productDetails: products[iap_course_id],
-            applicationUserName: null,
-            /*sandboxTesting: true*/);
-        _iapIosPlatform.buyNonConsumable(
-            purchaseParam: purchaseParam);
+  PurchaseParam purchaseParam = PurchaseParam(
+    productDetails: _products[iap_course_id],
+    applicationUserName: null,
+    /*sandboxTesting: true*/);
+  try {
+    _iapIosPlatform.buyNonConsumable(purchaseParam: purchaseParam);
+  } catch (e) {
+    scaffold_state.currentState.showSnackBar(new SnackBar(duration: Duration(seconds: 3),backgroundColor: accent,
+        content: new Text('$e',style: TextStyle(
+            color: Colors.black,fontWeight: FontWeight.bold
+        ),)));
 
+  }
+
+}
+
+        //bro ini onn build edukkamo before that aa clear cache onn undo
         /* Navigator.of(context, rootNavigator: true).pop();*/
       },
     );
@@ -928,7 +1088,7 @@ initStoreInfo();
       },
     );
   }
- // final InAppPurchaseConnection _connection = InAppPurchaseConnection.instance;
+  // final InAppPurchaseConnection _connection = InAppPurchaseConnection.instance;
   StreamSubscription<List<PurchaseDetails>> _subscription;
   List<String> _notFoundIds = [];
   List<ProductDetails> _products = [];
@@ -950,6 +1110,17 @@ initStoreInfo();
   }
 
   void showPendingUI() {
+    scaffold_state.currentState.showSnackBar(SnackBar(
+      content: Row(
+
+        children: [
+          Container(
+              width: 50,height: 50,
+              child: CircularProgressIndicator()),
+          SizedBox(width: 10,),
+          Text('Loading',style: TextStyle(color: Colors.white),)
+        ],
+      ),));
     setState(() {
       _purchasePending = true;
     });
@@ -976,7 +1147,7 @@ initStoreInfo();
       'order_id' : '$order_id'
     };
     var url =
-        'https://lledu.in/livelongwealth/api/httprequest/app_payment';
+    Uri.parse('https://lledu.in/livelongwealth/api/httprequest/app_payment');
     var response = await http.post(url, body: body);
 
     print('Response status: ${response.statusCode}');
@@ -992,7 +1163,7 @@ initStoreInfo();
       order_id=purchaseDetails.purchaseID.toString();
     });
 
-   await Payment_Success();
+    //await Payment_Success();
     setState(() {
       Home.index=1;
     });
@@ -1028,15 +1199,15 @@ initStoreInfo();
   }
 
   void handleError(IAPError error) async{
-    if(error.message.toLowerCase().contains('sandbox')||
+   /* if(error.message.toLowerCase().contains('sandbox')||
         error.code.toLowerCase().contains('sandbox')||
         error.source.toString().toLowerCase().contains('sandbox')
     ){
-      setState(() {
+     *//* setState(() {
         order_id='1234applesandboxtest';
       });
 
-      await Payment_Success();
+      await Payment_Success();*//*
       setState(() {
         Home.index=1;
       });
@@ -1056,7 +1227,15 @@ initStoreInfo();
       setState(() {
         _purchasePending = false;
       });
-    }
+    }*/
+    scaffold_state.currentState.showSnackBar(new SnackBar(duration: Duration(seconds: 3),backgroundColor: accent,
+        content: new Text('${error.message.toString()}',style: TextStyle(
+            color: Colors.black,fontWeight: FontWeight.bold
+        ),)));
+
+    setState(() {
+      _purchasePending = false;
+    });
   }
 
   Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) {
@@ -1074,7 +1253,7 @@ initStoreInfo();
 
     purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
       //print("fffffffffffffffffffffffffffffffffffffffff"+purchaseDetails.verificationData.localVerificationData+"gggggggg"+purchaseDetails.verificationData.serverVerificationData);
-        await _iapIosPlatform.completePurchase(purchaseDetails);
+      await _iapIosPlatform.completePurchase(purchaseDetails);
       if (purchaseDetails.status == PurchaseStatus.pending) {
 
         showPendingUI();
@@ -1101,6 +1280,9 @@ initStoreInfo();
             _handleInvalidPurchase(purchaseDetails);
             return;
           }
+          if (purchaseDetails.pendingCompletePurchase) {
+            await _iapIosPlatform.completePurchase(purchaseDetails);
+          }
         }
 
       }
@@ -1121,4 +1303,4 @@ initStoreInfo();
   }
 
 }
-
+//bro the parampurchase tht you fave is the var type  But here we should give variable name.. is it ok to use type there?

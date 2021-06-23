@@ -1,49 +1,37 @@
-/*
+// Copyright 2013 The Flutter Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-
-import 'package:firebase_core/firebase_core.dart';
-
-import 'package:in_app_purchase/in_app_purchase.dart';
-
-
+import 'package:in_app_purchase_ios/in_app_purchase_ios.dart';
+import 'package:in_app_purchase_platform_interface/in_app_purchase_platform_interface.dart';
 import 'consumable_store.dart';
 
 
 
+const bool _kAutoConsume = true;
 
-
-const bool _kAutoConsume = false;
-
-const String _kConsumableIdMonthly =  'monthly_subscription';
-const String _kConsumableIdYearly =  'yearly_subscription';
+const String _kConsumableId = 'consumable';
+const String _kUpgradeId = 'upgrade';
+const String _kSilverSubscriptionId = 'subscription_silver';
+const String _kGoldSubscriptionId = 'subscription_gold';
+const Set<String> _kIds = {'Step1','Step2','Step3'};
 const List<String> _kProductIds = <String>[
-  _kConsumableIdMonthly,
-  _kConsumableIdYearly,
-  'lifetime_subscription'
+  'Step1','Step2','Step3'
 ];
-class PurchasePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
 
-          fontFamily: 'workSans'
-      ),
-      home: purchasePage(),
-    );
-  }
-}
-class purchasePage extends StatefulWidget {
+
+class customIAP extends StatefulWidget {
+
   @override
-  _purchasePageState createState() => _purchasePageState();
+  _customIAPState createState() => _customIAPState();
 }
 
-class _purchasePageState extends State<purchasePage> {
-
-  final InAppPurchaseConnection _connection = InAppPurchaseConnection.instance;
+class _customIAPState extends State<customIAP> {
+  final InAppPurchaseIosPlatform _iapIosPlatform =
+  InAppPurchasePlatform.instance as InAppPurchaseIosPlatform;
   StreamSubscription<List<PurchaseDetails>> _subscription;
   List<String> _notFoundIds = [];
   List<ProductDetails> _products = [];
@@ -53,31 +41,26 @@ class _purchasePageState extends State<purchasePage> {
   bool _purchasePending = false;
   bool _loading = true;
   String _queryProductError;
-  DateTime today= DateTime.now();
-  bool isdone = false;
+
   @override
   void initState() {
-    Stream purchaseUpdated =
-        InAppPurchaseConnection.instance.purchaseUpdatedStream;
+    final Stream<List<PurchaseDetails>> purchaseUpdated =
+        _iapIosPlatform.purchaseStream;
     _subscription = purchaseUpdated.listen((purchaseDetailsList) {
-      print('NEW PURCHASE');
       _listenToPurchaseUpdated(purchaseDetailsList);
-
     }, onDone: () {
-      print('CANCELLED');
       _subscription.cancel();
     }, onError: (error) {
-      print(error);
+      // handle error here.
     });
     initStoreInfo();
     super.initState();
   }
 
   Future<void> initStoreInfo() async {
-    final bool isAvailable = await _connection.isAvailable();
+    final bool isAvailable = await _iapIosPlatform.isAvailable();
     if (!isAvailable) {
       setState(() {
-        print('HIIIIIIII');
         _isAvailable = isAvailable;
         _products = [];
         _purchases = [];
@@ -90,13 +73,12 @@ class _purchasePageState extends State<purchasePage> {
     }
 
     ProductDetailsResponse productDetailResponse =
-    await _connection.queryProductDetails(_kProductIds.toSet());
+    await _iapIosPlatform.queryProductDetails(_kProductIds.toSet());
     if (productDetailResponse.error != null) {
       setState(() {
         _queryProductError = productDetailResponse.error.message;
         _isAvailable = isAvailable;
         _products = productDetailResponse.productDetails;
-
         _purchases = [];
         _notFoundIds = productDetailResponse.notFoundIDs;
         _consumables = [];
@@ -120,22 +102,10 @@ class _purchasePageState extends State<purchasePage> {
       return;
     }
 
-    final QueryPurchaseDetailsResponse purchaseResponse =
-    await _connection.queryPastPurchases();
-    if (purchaseResponse.error != null) {
-      // handle query past purchase error..
-    }
-    final List<PurchaseDetails> verifiedPurchases = [];
-    for (PurchaseDetails purchase in purchaseResponse.pastPurchases) {
-      if (await _verifyPurchase(purchase)) {
-        verifiedPurchases.add(purchase);
-      }
-    }
     List<String> consumables = await ConsumableStore.load();
     setState(() {
       _isAvailable = isAvailable;
       _products = productDetailResponse.productDetails;
-      _purchases = verifiedPurchases;
       _notFoundIds = productDetailResponse.notFoundIDs;
       _consumables = consumables;
       _purchasePending = false;
@@ -150,302 +120,211 @@ class _purchasePageState extends State<purchasePage> {
   }
 
 
-
-
-
-
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-
-      ),
-      extendBodyBehindAppBar: true,
-      body:_products.length!=0? WillPopScope(
-        // ignore: missing_return
-        onWillPop: (){
-
-        },
-        child: isdone == false? SingleChildScrollView(
-          child: Container(
-            padding: EdgeInsets.only(left: 20, right: 20, top: 30),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  height: 115,
-                  width: 115,
-
-                ),
-                Text("Why Milion Pro", style: TextStyle(
-                    fontSize: 18
-                ),),
-                SizedBox(height: 20,),
-                Row(
-                  children: [
-                    Icon(Icons.check_circle_outline,),
-                    Text(" Get more than 2+ Signals",),
-                  ],
-                ),
-                SizedBox(height: 10,),
-                Row(
-                  children: [
-                    Icon(Icons.check_circle_outline),
-                    Expanded(child: Text(" Hate Ads? No problem, no ads in pro version.",)),
-                  ],
-                ),
-                SizedBox(height: 10,),
-                Row(
-                  children: [
-                    Icon(Icons.check_circle_outline),
-                    Text(" Proper risk management",),
-                  ],
-                ),
-                SizedBox(height: 10,),
-                Row(
-                  children: [
-                    Icon(Icons.check_circle_outline),
-                    Text(" Money management",),
-                  ],
-                ),
-                Row(
-                  children: [
-                    Icon(Icons.check_circle_outline),
-                    Expanded(child: Text(" \nAll upcoming features are included (Stock Market Signals and Options Trading Signals",)),
-                  ],
-                ),
-                SizedBox(height: 20,),
-                Text("Hate subscription? Subscribe to Lifetime and get rid of subscription. All currently & upcoming features are included free for lifetime.", style: TextStyle(
-                    color: Colors.grey
-                ),),
-                SizedBox(height: 20,),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text("Choose a plan!", style: TextStyle(
-                        fontSize: 18
-                    ),)
-                  ],
-                ),
-                SizedBox(height: 20,),
-                InkWell(
-                  onTap: (){
-                    print(_products[1].id);
-                    PurchaseParam purchaseParam = PurchaseParam(
-                        productDetails: _products[1],
-                        applicationUserName: null,
-                        sandboxTesting: true);
-                    if (_products[1].id == _kConsumableIdMonthly) {
-                      _connection.buyConsumable(
-                          purchaseParam: purchaseParam,
-                          autoConsume: _kAutoConsume);
-                    } else {
-                      _connection.buyNonConsumable(
-                          purchaseParam: purchaseParam);
-                    }
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Center(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("1 Month", style: TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black
-                                      ),),
-                                      Text("\$10", style: TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black
-                                      ),),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("Total \$10", style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black
-                                      ),),
-                                      Text("You Pay", style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black
-                                      ),),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.chevron_right, color: Colors.black,),
-                          ],
-                        )
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20,),
-                InkWell(
-                  onTap: (){
-                    print(_products[2].id);
-                    PurchaseParam purchaseParam = PurchaseParam(
-                        productDetails: _products[2],
-                        applicationUserName: null,
-                        sandboxTesting: true);
-                    if (_products[2].id == _kConsumableIdYearly) {
-                      _connection.buyConsumable(
-                          purchaseParam: purchaseParam,
-                          autoConsume: _kAutoConsume);
-                    } else {
-                      _connection.buyNonConsumable(
-                          purchaseParam: purchaseParam);
-                    }
-
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Center(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("12 Months", style: TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black
-                                      ),),
-                                      Text("\$70", style: TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black
-                                      ),),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(
-                                        child: Text("Total \$100 - 30% Discount", style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.black
-                                        ),),
-                                      ),
-                                      Text("You Pay", style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black
-                                      ),),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.chevron_right, color: Colors.black,),
-                          ],
-                        )
-                    ),
-                  ),
-                ),
-                SizedBox(height: 20,),
-                InkWell(
-                  onTap: (){
-
-                    print(_products[0].id);
-                    PurchaseParam purchaseParam = PurchaseParam(
-                        productDetails: _products[0],
-                        applicationUserName: null,
-                        sandboxTesting: true);
-                    if (_products[0].id == 'lifetime_subscription') {
-
-                      _connection.buyNonConsumable(
-                          purchaseParam: purchaseParam);
-
-                    } else {
-                      _connection.buyConsumable(
-                          purchaseParam: purchaseParam,
-                          autoConsume: _kAutoConsume);
-                    }
-                  },
-                  child: Container(
-                    padding: EdgeInsets.all(20),
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                    //  color: yellow,
-                      borderRadius: BorderRadius.all(Radius.circular(20)),
-                    ),
-                    child: Center(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                children: [
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text("Life Time", style: TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black
-                                      ),),
-                                      Text("\$134", style: TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.black
-                                      ),),
-                                    ],
-                                  ),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Expanded(child:  Text("Total \$1341 - 90% Discount", style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black
-                                      ),),),
-
-                                      Text("You Pay", style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.black
-                                      ),),
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                            Icon(Icons.chevron_right, color: Colors.black,),
-                          ],
-                        )
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ):Center(
-          child: Container(
-            color: Colors.grey[300],
-            width: 70.0,
-            height: 70.0,
-            child: new Padding(padding: const EdgeInsets.all(5.0),child: new Center(child: new CircularProgressIndicator(valueColor:AlwaysStoppedAnimation<Color>(Colors.red)))),
-          ),
+    List<Widget> stack = [];
+    if (_queryProductError == null) {
+      stack.add(
+        ListView(
+          children: [
+            _buildConnectionCheckTile(),
+            _buildProductList(),
+            _buildConsumableBox(),
+            _buildRestoreButton(),
+          ],
         ),
-      ):Center(child: CircularProgressIndicator(valueColor:AlwaysStoppedAnimation<Color>(Colors.red)),),
+      );
+    } else {
+      stack.add(Center(
+        child: Text(_queryProductError),
+      ));
+    }
+    if (_purchasePending) {
+      stack.add(
+        Stack(
+          children: [
+            Opacity(
+              opacity: 0.3,
+              child: const ModalBarrier(dismissible: false, color: Colors.grey),
+            ),
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return MaterialApp(
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('IAP Example'),
+        ),
+        body: Stack(
+          children: stack,
+        ),
+      ),
     );
   }
 
+  Card _buildConnectionCheckTile() {
+    if (_loading) {
+      return Card(child: ListTile(title: const Text('Trying to connect...')));
+    }
+    final Widget storeHeader = ListTile(
+      leading: Icon(_isAvailable ? Icons.check : Icons.block,
+          color: _isAvailable ? Colors.green : ThemeData.light().errorColor),
+      title: Text(
+          'The store is ' + (_isAvailable ? 'available' : 'unavailable') + '.'),
+    );
+    final List<Widget> children = <Widget>[storeHeader];
+
+    if (!_isAvailable) {
+      children.addAll([
+        Divider(),
+        ListTile(
+          title: Text('Not connected',
+              style: TextStyle(color: ThemeData.light().errorColor)),
+          subtitle: const Text(
+              'Unable to connect to the payments processor. Has this app been configured correctly? See the example README for instructions.'),
+        ),
+      ]);
+    }
+    return Card(child: Column(children: children));
+  }
+
+  Card _buildProductList() {
+    if (_loading) {
+      return Card(
+          child: (ListTile(
+              leading: CircularProgressIndicator(),
+              title: Text('Fetching products...'))));
+    }
+    if (!_isAvailable) {
+      return Card();
+    }
+    final ListTile productHeader = ListTile(title: Text('Products for Sale'));
+    List<ListTile> productList = <ListTile>[];
+    if (_notFoundIds.isNotEmpty) {
+      productList.add(ListTile(
+          title: Text('[${_notFoundIds.join(", ")}] not found',
+              style: TextStyle(color: ThemeData.light().errorColor)),
+          subtitle: Text(
+              'This app needs special configuration to run. Please see example/README.md for instructions.')));
+    }
+
+    // This loading previous purchases code is just a demo. Please do not use this as it is.
+    // In your app you should always verify the purchase data using the `verificationData` inside the [PurchaseDetails] object before trusting it.
+    // We recommend that you use your own server to verify the purchase data.
+    Map<String, PurchaseDetails> purchases =
+    Map.fromEntries(_purchases.map((PurchaseDetails purchase) {
+      if (purchase.pendingCompletePurchase) {
+        _iapIosPlatform.completePurchase(purchase);
+      }
+      return MapEntry<String, PurchaseDetails>(purchase.productID, purchase);
+    }));
+    productList.addAll(_products.map(
+          (ProductDetails productDetails) {
+        PurchaseDetails previousPurchase = purchases[productDetails.id];
+        return ListTile(
+            title: Text(
+              productDetails.title,
+            ),
+            subtitle: Text(
+              productDetails.description,
+            ),
+            trailing: previousPurchase != null
+                ? Icon(Icons.check)
+                : TextButton(
+              child: Text(productDetails.price),
+              style: TextButton.styleFrom(
+                backgroundColor: Colors.green[800],
+                primary: Colors.white,
+              ),
+              onPressed: () {
+                PurchaseParam purchaseParam = PurchaseParam(
+                  productDetails: productDetails,
+                  applicationUserName: null,
+                );
+                if (productDetails.id == _kConsumableId) {
+                  _iapIosPlatform.buyConsumable(
+                      purchaseParam: purchaseParam,
+                      autoConsume: _kAutoConsume || Platform.isIOS);
+                } else {
+                  _iapIosPlatform.buyNonConsumable(
+                      purchaseParam: purchaseParam);
+                }
+              },
+            ));
+      },
+    ));
+
+    return Card(
+        child:
+        Column(children: <Widget>[productHeader, Divider()] + productList));
+  }
+
+  Card _buildConsumableBox() {
+    if (_loading) {
+      return Card(
+          child: (ListTile(
+              leading: CircularProgressIndicator(),
+              title: Text('Fetching consumables...'))));
+    }
+    if (!_isAvailable || _notFoundIds.contains(_kConsumableId)) {
+      return Card();
+    }
+    final ListTile consumableHeader =
+    ListTile(title: Text('Purchased consumables'));
+    final List<Widget> tokens = _consumables.map((String id) {
+      return GridTile(
+        child: IconButton(
+          icon: Icon(
+            Icons.stars,
+            size: 42.0,
+            color: Colors.orange,
+          ),
+          splashColor: Colors.yellowAccent,
+          onPressed: () => consume(id),
+        ),
+      );
+    }).toList();
+    return Card(
+        child: Column(children: <Widget>[
+          consumableHeader,
+          Divider(),
+          GridView.count(
+            crossAxisCount: 5,
+            children: tokens,
+            shrinkWrap: true,
+            padding: EdgeInsets.all(16.0),
+          )
+        ]));
+  }
+
+  Widget _buildRestoreButton() {
+    if (_loading) {
+      return Container();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          TextButton(
+            child: Text('Restore purchases'),
+            style: TextButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              primary: Colors.white,
+            ),
+            onPressed: () => _iapIosPlatform.restorePurchases(),
+          ),
+        ],
+      ),
+    );
+  }
 
   Future<void> consume(String id) async {
     await ConsumableStore.consume(id);
@@ -462,32 +341,19 @@ class _purchasePageState extends State<purchasePage> {
   }
 
   void deliverProduct(PurchaseDetails purchaseDetails) async {
-
-
-    // IMPORTANT!! Always verify a purchase purchase details before delivering the product.
-    if (purchaseDetails.productID == _kConsumableIdMonthly || purchaseDetails.productID == _kConsumableIdYearly) {
+    // IMPORTANT!! Always verify purchase details before delivering the product.
+    if (purchaseDetails.productID == _kConsumableId) {
       await ConsumableStore.save(purchaseDetails.purchaseID);
-      if(purchaseDetails.productID == _kConsumableIdMonthly){
-
-
-
-      }else{
-
-
-      }
       List<String> consumables = await ConsumableStore.load();
       setState(() {
         _purchasePending = false;
         _consumables = consumables;
       });
     } else {
-
-
       setState(() {
         _purchases.add(purchaseDetails);
         _purchasePending = false;
       });
-
     }
   }
 
@@ -500,7 +366,6 @@ class _purchasePageState extends State<purchasePage> {
   Future<bool> _verifyPurchase(PurchaseDetails purchaseDetails) {
     // IMPORTANT!! Always verify a purchase before delivering the product.
     // For the purpose of an example, we directly return true.
-
     return Future<bool>.value(true);
   }
 
@@ -508,66 +373,27 @@ class _purchasePageState extends State<purchasePage> {
     // handle invalid purchase here if  _verifyPurchase` failed.
   }
 
-  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) async{
-
+  void _listenToPurchaseUpdated(List<PurchaseDetails> purchaseDetailsList) {
     purchaseDetailsList.forEach((PurchaseDetails purchaseDetails) async {
-      //print("fffffffffffffffffffffffffffffffffffffffff"+purchaseDetails.verificationData.localVerificationData+"gggggggg"+purchaseDetails.verificationData.serverVerificationData);
-      await InAppPurchaseConnection.instance.completePurchase(purchaseDetails);
       if (purchaseDetails.status == PurchaseStatus.pending) {
-
         showPendingUI();
       } else {
-
         if (purchaseDetails.status == PurchaseStatus.error) {
-
-          print(purchaseDetails.error.toString());
-          print(purchaseDetails.error.message.toString());
-          print(purchaseDetails.error.details.toString());
-          print(purchaseDetails.error.code.toString());
-          print(purchaseDetails.error.source.toString());
           handleError(purchaseDetails.error);
         } else if (purchaseDetails.status == PurchaseStatus.purchased) {
-          setState(() {
-            isdone = true;
-          });
           bool valid = await _verifyPurchase(purchaseDetails);
           if (valid) {
-
             deliverProduct(purchaseDetails);
           } else {
-
             _handleInvalidPurchase(purchaseDetails);
             return;
           }
         }
-        if (Platform.isAndroid) {
-          if (_kAutoConsume && purchaseDetails.productID == _kConsumableIdMonthly || (_kAutoConsume && purchaseDetails.productID == _kConsumableIdYearly)) {
-            await InAppPurchaseConnection.instance
-                .consumePurchase(purchaseDetails);
-          }
-        }
+
         if (purchaseDetails.pendingCompletePurchase) {
-          await InAppPurchaseConnection.instance
-              .completePurchase(purchaseDetails);
+          await _iapIosPlatform.completePurchase(purchaseDetails);
         }
       }
     });
-    */
-/* for (var p in purchaseDetailsList) {
-
-      // Code to validate the payment
-
-      if (!p.pendingCompletePurchase) continue;
-      // if (_isConsumable(p.productID)) continue; // Determine if the item is consumable. If so do not consume it
-
-      var result = await InAppPurchaseConnection.instance.completePurchase(p);
-
-      if (result.responseCode != BillingResponse.ok) {
-        print("result: ${result.responseCode} (${result.debugMessage})");
-      }
-    }*//*
-
   }
-
 }
-*/
