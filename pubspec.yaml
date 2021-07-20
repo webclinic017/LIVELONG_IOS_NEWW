@@ -41,6 +41,7 @@ dependencies:
   in_app_purchase: ^1.0.2
   in_app_purchase_ios: ^0.1.0
   in_app_purchase_platform_interface: ^1.0.0
+  webview_flutter: ^2.0.10
 
 
 dev_dependencies:

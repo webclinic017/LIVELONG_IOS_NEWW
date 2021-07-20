@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:livelong/Profile.dart';
 import 'package:livelong/colors.dart';
+import 'package:livelong/copy_trade.dart';
 import 'package:livelong/cources.dart';
 import 'package:livelong/paper_trading_home.dart';
 
@@ -19,6 +20,7 @@ class Home extends StatefulWidget {
   int _currentIndex = Home.index==null?0:Home.index;
   final List<Widget> _children = [
     NewsFeed(),
+    CopyTrade(),
     Cources(),
     Profile(),
   ];
@@ -49,14 +51,18 @@ class Home extends StatefulWidget {
                   icon: Container(height: 25,child: Image.asset('assets/images/Asset 39@4x.png',color: _currentIndex==0?navbaricon:inactivenavbar,)),
                   title: Text('Home')
               ),
+              BottomNavigationBarItem(
+                  icon: Container(height: 25,child: Image.asset('assets/images/bx_bxs-bar-chart-alt-2.png',color: _currentIndex==1?navbaricon:inactivenavbar,)),
+                  title: Text('Algo Trade')
+              ),
 
               BottomNavigationBarItem(
-                icon: Container(height: 25,child: Image.asset('assets/images/Asset 37@4x.png',color: _currentIndex==1?navbaricon:inactivenavbar,)),
+                icon: Container(height: 25,child: Image.asset('assets/images/Asset 37@4x.png',color: _currentIndex==2?navbaricon:inactivenavbar,)),
                 title: Text('Courses')
               ),
 
               BottomNavigationBarItem(
-                  icon: Container(height: 25,child: Image.asset('assets/images/Asset 35@4x.png',color: _currentIndex==2?navbaricon:inactivenavbar,)),
+                  icon: Container(height: 25,child: Image.asset('assets/images/Asset 35@4x.png',color: _currentIndex==3?navbaricon:inactivenavbar,)),
                   title: Text('Profile')
               ),
             ],//
